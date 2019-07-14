@@ -1,0 +1,44 @@
+---
+title: "BDAII Intro to Quant"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## LIBRARY
+
+The `tidyquant` library was developed to turn the `quantmod` and `xts` package outputs into a tidier format. The tidyverse is a collection of packages built by Hadley Wickham [http://tidyverse.org/] that share a common philosophy of shaping and interacting with data.
+
+
+```{r}
+library(tidyquant) 
+library(ggplot2)
+```
+
+## What Are the Exchanges Available?
+
+```{r}
+tq_exchange_options()
+```
+
+## What Are the Options in Tidyquant?
+
+```{r}
+tq_get_options()
+```
+
+# GET STOCK PRICES
+
+Stock symnbols can be obtained at https://www.nyse.com/listings_directory/stock
+
+Aircraft Manufacturer's
+
+```{r}
+
+```
+
+
+
+

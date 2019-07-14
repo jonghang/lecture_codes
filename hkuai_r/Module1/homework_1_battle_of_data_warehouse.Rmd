@@ -1,0 +1,36 @@
+---
+title: "Homework 1 - Battle of Data Warehouse"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# TAKE HOME EXAM - BATTLE OF DATA WAREHOUSING
+
+## BACKGROUND
+
+Snowflake Computing was founded in 2012 in San Mateo. It came out of stealth mode in October 2014. As of October 2015, Snowflake Computing has raised US\$71 million in funding, including \$26 million it had raised before coming out of stealth and \$45 million funding round announced in June 2015. An additional \$100 million was raised in April 2017, bringing total funding to \$205 million. In January 2018, they announced a \$263 million investment round putting them at a \$1.5 billion unicorn valuation. In October 2018, Snowflake raised another \$450M in a massive round of financing raising the pre-IPO valuation to $3.5B. CEO Muglia said an IPO could be in their future although indicated that this could be pushed out to 2020 with the latest round of financing (Wikipedia - Snowflake Computing).
+
+## DESCRIPTIONS OF HOMEWORK
+
+There are other data warehouse vendors in the market such as Teradata, SAP, Oracle.  These vendors started as on-premise solution providers while Snowflake has been a Cloud based data warehouse since its inception. (Source: https://copycoding.com/d/teradata-vs-snowflake-cloud-data-warehouse)
+
+Your assignment is to determine if the US\$1.5B unicorn valuation of Snowflake in 2018 has any effect on the performance of the on-premise providers.
+
+Find out if Teradata's, SAP's and Oracle's stocks are listed on NYSE, NASDAQ or AMEX.  Write an R function to retrieve their stock symbols. Your function might have 2 arguments to take 2 inputs: (1) the company's name (2) which stock exchange?
+
+Perform statistical analysis on their stock prices before and after the unicorn valuation:
+
+* Period before: 2017-01-01 to 2017-12-31
+* Period After: 2018-01-01 to current day
+
+The statistical analysis to be perform on their stock prices are:
+
+* 
+
+```{r}
+
+```
+

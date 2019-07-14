@@ -1,0 +1,304 @@
+---
+title: "Read and Explore Data"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# LIBRARIES
+
+Load the required libraries
+
+```{r cars}
+library(tidyverse)
+library(tidyquant)
+library(ggplot2)
+library(ggalt)
+library(quantmod)
+library(DBI)
+library(RMariaDB)
+```
+
+# VECTORS AND SEQUENCES
+
+Create a vector consisting of integers. Check its type using `typeof` function. What can you conclude? Is the vector has the expected type? If not, how do you get the expected `integer` type?
+
+```{r}
+vecInt <- c(1,2,3,4,5,6)
+vecInt
+length(vecInt)
+typeof(vecInt)
+
+vecInt <- as.integer(vecInt)
+typeof(vecInt)
+```
+
+Create a vector consisting of `float` elements:
+
+```{r}
+vecFloat <- c(1.1, 2.3, 3.4, 0.1, 8.7)
+vecFloat
+```
+
+Create vectors with values of mixed types. Under the hood, R will coerce the vector to a specific type.
+If an integer and a string 
+
+```{r}
+vecMixed1 <- c(1.2, "abc")
+class(vecMixed1)
+
+vecMixed2 <- c("abc", TRUE)
+class(vecMixed2)
+typeof(vecMixed2)
+
+vecMixed1
+vecMixed2
+```
+
+# CAST TYPES
+
+One type can be cast to another type in R. An integer can be explicitly cast into a string. Use the following functions to cast:
+* `as.integer` : cast a value to integer
+* `as.numeric` : cast a value to a number
+
+```{r}
+num <- 1
+class(int1)
+is.integer(num)
+is.numeric(num)
+
+is.integer(1L)
+is.numeric(1L)
+
+num1 <- 1.2
+is.numeric(num1)
+```
+
+
+## LIST
+
+```{r}
+list1 <- list(1.2, 2.3, 0.4, -9.7, -4.1, 6.8)
+list1
+
+list1[[1]]
+list1[[2]]
+# elements 1 and 2
+list1[c(1,2)]
+# elements 1 to 3
+list1[c(1:3)]
+# remove first element
+list1[c(-1)]
+```
+
+Retrieve the list 2 elements:
+
+```{r}
+# first find the number of elements
+nElems <- length(list1)
+# number of elements to be removed
+nRemove <- nElems - 2
+startElem <- nRemove + 1
+list1[c(startElem, nElems)]
+```
+
+Mixed types are not coerced in `list`:
+
+```{r}
+mixedList <- list(1.2, 3.4, FALSE, "abc", 8, -1L)
+mixedList
+class(mixedList)
+class(mixedList[[1]])
+class(mixedList[[2]])
+class(mixedList[[3]])
+class(mixedList[[4]])
+class(mixedList[[5]])
+```
+
+Generate a list:
+
+```{r}
+numList <- 0:10
+numList
+class(numList)
+# convert to list
+class(list(numList))
+```
+
+
+## SEQUENCES
+
+Sequences can be created using the `seq` function. 
+
+```{r}
+# create a sequence from 0 to 10 incresed by 1
+seq(0, 10, 1)
+seq(from=0, to=10, by=1)
+seq(from=0, to=10, by=0.5)
+seq(from=10, to=100, by=pi)
+```
+
+
+# IF ELSE
+
+If else conditions in R can be implemented using the `ifelse(test, yes, no)` function. 
+
+If BMI of a person is less than 24
+
+```{r}
+BMI <- 25
+ifelse(BMI > 24, 'overweight', 'normal')
+```
+
+If an overweight person exceeds a particular BMI, he / she becomes obese.
+
+```{r}
+BMI <- 29
+ifelse(BMI > 24,ifelse(BMI < 26, 'overweight', 'obese'), 'normal')
+```
+
+
+# DATES
+
+
+# FUNCTIONS
+
+# APPLY
+
+
+# MATRICES
+
+## CREATE MATRICES
+
+A matrix consists of multiple rows of vectors. Number of columns and rows must be specified in creating a matrix.
+
+Create a matrix of 5 columns and 4 rows (4 x 5)
+```{r}
+mtx1 <- matrix(nrow = 4, ncol = 5)
+mtx1
+```
+
+Numbers can be initialized when creating a matrix. Create a 4 x 5 matrix with zero initial values:
+
+```{r}
+rows <- 4
+cols <- 5
+zeros <- replicate(rows * cols, 0)
+mtx2 <- matrix(zeros, nrow = rows, ncol = cols)
+mtx2
+```
+
+Initialize the matrix with sequence from 1 to 20. Numbers can be filled 
+* from left to right followed by top to bottom (`byrow = TRUE`, defailt behavior)
+* from top to bottom followed by left to right (`byrow = FALSE`)
+
+Fill from top to bottom first:
+
+```{r}
+seqNum <- seq(from = 1, to = rows * cols, by = 1)
+mtx3 <- matrix(seqNum, nrow = rows, ncol = cols, byrow = FALSE)
+mtx3
+```
+
+Fill from left to right first:
+
+```{R}
+mtx4 <- matrix(seqNum, nrow = rows, ncol = cols, byrow = TRUE)
+mtx4
+```
+
+## SLICING THE MATRIX
+
+Check the matrix's dimension using `dim()` function:
+
+```{r}
+dim(mtx3)
+```
+
+The first element of `dim` is the row number and the second element is the column number. 
+
+```{r}
+dim(mtx3)[1]
+dim(mtx3)[2]
+```
+
+
+Retrieve the value of 3rd row and 2nd column:
+
+```{r}
+mtx3[3,2]
+```
+
+Retrieve values from the 4th row. 
+
+```{r}
+mtx3[4,]
+```
+
+Retrieve values from 3rd columns:
+
+```{r}
+mtx3[,3]
+```
+
+Retrieve values from 4th to 5th columns and from 3rd and 4th rows:
+
+```{r}
+mtx3[3:4,4:5]
+```
+
+Names can be assigned to rows and columns of the matrix.
+
+Assign names to rows:
+```{r}
+rownames(mtx3) <- c('r1','r2','r3','r4')
+mtx3
+```
+
+Assign names to columns:
+
+```{r}
+colnames(mtx3) <- c('c1','c2','c3','c4','c5')
+mtx3
+```
+
+```{r}
+mtx3['r1','c5']
+```
+
+Retrieve values from 1st to 3rd rows and from 3rd to 4th columns:
+
+```{r}
+mtx3[1:3, 4:5]
+```
+
+A matrix can be converted into a data table (data frame) using `as.data.frame` function:
+
+```{r}
+mtx3.df <- as.data.frame(mtx3)
+mtx3.df
+```
+
+The above table is an index table where `r1`, `r2`, `r3` and `r4` are row names. We want to convert the index to a table column `c0` by using the `rownames_to_column()` function. `rownames_to_column()` is in the `tibble` library in `tidyverse` package.
+
+```{r}
+mtx3.df <- rownames_to_column(mtx3.df, 'c0')
+mtx3.df
+```
+
+
+A matrix can also be converted into a data frame using the `tibble` library.
+
+First, import the `tibble` library:
+
+```{r}
+library(tibble)
+```
+
+```{r}
+mtx3.tibble <- as_tibble(mtx3)
+mtx3.tibble
+```
+

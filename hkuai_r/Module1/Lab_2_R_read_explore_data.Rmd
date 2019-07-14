@@ -1,0 +1,426 @@
+---
+title: "Read and Explore Data"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# LIBRARIES
+
+Load the required libraries
+
+```{r cars}
+library(tidyverse)
+library(tidyquant)
+library(ggplot2)
+library(ggalt)
+library(quantmod)
+library(DBI)
+library(RMariaDB)
+```
+
+## HELPER FUNCTIONS
+
+### FUNCTION TO READ CSV FILES
+
+The Data Path has the directory of pattern `/<home>/data/<data dir>/<data file>`
+
+```{r}
+DataFile <- function(dataDir, dataFilename)
+{
+    home.dir <- Sys.getenv('HOME')
+    data.path <- paste(home.dir,'data', dataDir, dataFilename, sep = '/')
+    data <- read.csv(data.path)
+    data
+}
+
+```
+
+## READ DATA FILES
+
+```{r}
+airlinesDirName <- 'airlines_data'
+flights.data <- DataFile(airlinesDirName,'flights.csv')
+airlines.data <- DataFile(airlinesDirName, 'airlines.csv')
+airports.data <- DataFile(airlinesDirName, 'airports.csv')
+
+```
+
+Inspect Flights data
+
+```{r}
+head(flights.data)
+```
+
+Inspect Airlines Data
+
+```{r}
+head(airlines.data)
+```
+
+Inspect Airports Data
+
+```{r}
+head(airports.data)
+```
+
+
+# READ MYSQL DATA
+
+```{r}
+learn.db <- dbConnect(RMariaDB::MariaDB(),
+                      user = "learninguser",
+                      password = "learning",
+                      dbname = "learningdb",
+                      host = "localhost")
+```
+
+```{r}
+dbGetQuery(learn.db, "SHOW TABLES")
+```
+
+```{r}
+food.df <- dbGetQuery(learn.db, "SELECT * FROM gi_food_data")
+head(food.df)
+```
+
+# BUILT-IN DATA
+
+R installation comes with a number of datasets. Use `data()` to display the list of datasets.
+
+```{r}
+data()
+```
+
+## MTCARS DATASET
+
+```{r}
+data(mtcars)
+mtcars <- as.data.frame(mtcars)
+head(mtcars)
+```
+
+
+## DISPLAY SETTING
+
+* Turn off scientific exponential (scipen = 999)
+* Set plot's width and height to 4 and 3
+
+```{r}
+options(scipen = 999, repr.plot.width=4, repr.plot.height=3) # turn-off scientific notation like 1e+48
+library(ggplot2)
+theme_set(theme_bw()) # pre-set the bw theme.
+```
+
+### MTCARS DATA EXPLORATION
+
+Plot Points
+
+```{r}
+scatter.plot <- ggplot(mtcars, aes(x=mpg, y=hp)) + geom_point()
+scatter.plot
+```
+
+Resize the Points by `Displacement (disp)`
+
+```{r}
+scatter.plot <- scatter.plot + geom_point(aes(col=cyl, size=disp))
+scatter.plot
+```
+
+Add Smooth Line using LOESS algorithm
+
+```{r}
+scatter.plot <- scatter.plot + geom_smooth(method="loess", se=F)
+scatter.plot
+```
+
+
+Extend the X and Y Axis Limits a little
+
+```{r}
+scatter.plot <- scatter.plot + xlim(c(10, 35)) + ylim(c(0, 350))
+scatter.plot
+```
+
+
+Complete with Title and Labels
+
+```{r}
+scatter.plot <- scatter.plot + labs(subtitle="HP Vs MPG", y="HP", x="MPG", 
+                                    title="Scatterplot", caption = "Source:R")
+scatter.plot
+```
+
+```{r}
+scatter.plot <- ggplot(mtcars, aes(x = mpg, y = hp)) + 
+    geom_point(aes(col = cyl, size=disp)) +
+    geom_smooth(method="loess", se = FALSE) +
+    labs(subtitle="HP Vs MPG", y = "HP", x = "MPG",
+         title="Scatterplot", caption = "Source: R")
+scatter.plot
+```
+
+### SCATTER PLOT WITH ENCIRCLING
+
+```{r}
+mtcars.circle <- mtcars[mtcars$hp >= 230,]
+```
+
+```{r}
+mtcars.plot <-  ggplot(mtcars, aes(x = mpg, y = hp)) + 
+                geom_point(aes(col = cyl, size = disp)) + # draw points
+                geom_smooth(method="loess", se = FALSE)
+mtcars.plot
+```
+
+Add Circle
+
+```{r}
+mtcars.plot <- mtcars.plot + 
+               geom_encircle(aes(x = mpg, y = hp),
+                             data = mtcars.circle, color = "red", 
+                             size = 2, expand = 0.08) +
+               labs(subtitle="Area Vs Population", y="Population", x="Area", 
+                    title="Scatterplot + Encircle", caption="Source: midwest")
+mtcars.plot
+```
+
+# STREAM FINANCIAL DATA
+
+Stream the following stocks of Aircraft Manufacturing sector:
+
+* Boeing (symbol: BA)
+* Airbus (symbol: AIR)
+* Lockheed Martin (symbol: LMT)
+
+```{r}
+BA <- tq_get(x = "BA")
+AIR <- tq_get(x = "AIR")
+LMT <- tq_get(x = "LMT")
+```
+
+The first few lines of BA data:
+
+```{r}
+head(BA)
+```
+
+The earliest and latest dates:
+
+```{r}
+min(BA$date)
+max(BA$date)
+nrow(BA)
+```
+
+Get data from 2018 until today. First, set today's date object
+
+```{r}
+today <- now()
+today
+
+# take only the date portion
+today <- as.Date(today)
+today
+```
+
+
+```{r}
+BA.from2018 <- tq_get(x = "BA", from= '2018-01-01', to = today)
+AIR.from2018 <- tq_get(x = "AIR", from= '2018-01-01', to = today)
+LMT.from2018 <- tq_get(x = "LMT", from= '2018-01-01', to = today)
+```
+
+```{r}
+nrow(BA.from2018)
+min(BA.from2018$date)
+max(BA.from2018$date)
+```
+
+## OTHER COUNTRY'S STOCK
+
+Stream Singapore's Keppel Stock (symbol: BN4). 
+
+```{r}
+BN4.from2018 <- tq_get(x = "BN4.SI", from= '2018-01-01', to = today)
+head(BN4.from2018)
+tail(BN4.from2018)
+```
+
+Stream Hng Kong's Cheung Kong's Stock (symbol: 0001.HK)
+
+```{r}
+CKH.from2018 <- tq_get(x = "0001.HK",  from = '2018-01-01', to = today)
+head(CKH.from2018)
+tail(CKH.from2018)
+```
+
+
+```{r}
+MAYBANK.from2018 <- tq_get(x = "1155.KL",  from = '2018-01-01', to = today)
+head(MAYBANK.from2018)
+```
+
+
+# DATA OPTIONS
+
+There are other data apart from stock prices.
+
+```{r}
+tq_get_options()
+```
+
+# STOCK EXCHANGES
+
+Stock exchanges available in tidyquant
+
+```{r}
+tq_exchange_options()
+```
+
+
+Connect to NYSE
+
+```{r}
+NYSE <- tq_exchange("nyse")
+```
+
+Examine the structure of NYSE
+
+```{r}
+str(NYSE)
+```
+
+```{r}
+head(NYSE)
+tail(NYSE)
+```
+
+# DATA PROCESSING USING dplyr 
+
+The library we use to transform data is `dplyr` in `tidyverse` package.
+
+We will perform some data processing on the *airlines* data.
+
+```{r}
+head(flights.data)
+```
+
+Create a function to combine `YEAR`, `MONTH` and `DAY` columns into a single field of `DATE`. 
+
+```{r}
+buildDateFunc <- function(year, month, day)
+{
+    dateStr <- paste(as.character(year),as.character(month),as.character(day), sep = "/")
+    dateObj <- as.Date(dateStr, "%Y/%m/%d")
+    dateObj
+}
+```
+
+Apply the `buildDateFunc` to flighs data. This can be done by mutating the data frame using `mutate` function of `dplyr`. Name the new date field as `FLIGHT_DATE`.
+
+```{r}
+flights.data.date <- flights.data %>% mutate(FLIGHT_DATE = buildDateFunc(YEAR, MONTH, DAY))
+head(flights.data.date)
+str(flights.data.date)
+```
+
+Retrieve the basic statistics of flights data.
+
+
+```{r}
+summary(flights.data.date)
+```
+
+Get the earliest and latest `FLIGHT_DATE`.
+
+```{r}
+min(flights.data.date$FLIGHT_DATE)
+max(flights.data.date$FLIGHT_DATE)
+```
+
+## Filter Data
+
+Retrieve flights of month 2 and day 2
+
+```{r}
+flights_m2_d2 <- flights.data.date %>% filter(MONTH == 2, DAY == 2)
+head(flights_m2_d2)
+nrow(flights_m2_d2)
+```
+
+Alternatively:
+
+```{r}
+flights_m2_d2_alt <- flights.data.date %>% 
+    filter(month(FLIGHT_DATE) == 2, day(FLIGHT_DATE) == 2)
+head(flights_m2_d2_alt)
+nrow(flights_m2_d2_alt)
+```
+
+Use logical AND
+
+```{r}
+flights_m2_d2_log <- flights.data.date %>% 
+    filter(month(FLIGHT_DATE) == 2 & day(FLIGHT_DATE) == 2)
+head(flights_m2_d2_log)
+nrow(flights_m2_d2_log)
+```
+
+Use Logical OR to filter flights of `MONTH` 2 and 6
+
+```{r}
+flights_m2_m6_log <- flights.data.date %>% 
+    filter(month(FLIGHT_DATE) == 2 | month(FLIGHT_DATE) == 6)
+head(flights_m2_m6_log)
+nrow(flights_m2_m6_log)
+```
+
+Verify only months 2 and 6 are retrieved.
+
+```{r}
+unique(flights_m2_m6_log$MONTH)
+```
+
+## SORT DATA
+
+Function `arrange` in `dplyr` is used to sort data. By default, the sorting occurs in ascending order. Use `arrange(desc(fieldname))` to sort in descending order.
+
+For now, we are only interested in `TAXI_IN`, `FLIGHT_DATE`, `DESTINATION_AIRPORT`, `AIRLINE`. We want to find out on which days the arrival airlines took the longest time to taxi in and at which airports.
+
+First, select only the desirable columns:
+
+```{r}
+flights.taxi_in <- select(flights.data.date, FLIGHT_DATE, 
+                          AIRLINE, DESTINATION_AIRPORT,
+                          TAXI_IN)
+flights.taxi_in.sorted <- flights.taxi_in %>% arrange(desc(TAXI_IN))
+
+head(flights.taxi_in.sorted)
+
+str(flights.taxi_in)
+```
+
+The Taxi in time is in seconds. Add a column to see the time in minutes:
+
+```{r}
+flights.taxi_in.sorted.minutes <- flights.taxi_in.sorted %>% mutate(TAXI_IN_MIN = round(TAXI_IN/60, 2))
+head(flights.taxi_in.sorted.minutes)
+```
+
+## TIBBLE
+
+```{r}
+flights.tib <- as_tibble(flights.data.date)
+
+
+# flights.tib %>% view()
+```
+
+
+
+
+
