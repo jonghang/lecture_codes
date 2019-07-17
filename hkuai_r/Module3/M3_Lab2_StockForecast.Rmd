@@ -1,0 +1,260 @@
+---
+title: "Stock Forecast ARIMA"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## LIBRARY
+
+```{r}
+library(tidyverse)
+library(ggplot2)
+library(forecast)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r}
+stock.data <- read.table("IBMdaily.txt",header = T)
+stock.data$Date <- as.Date(as.character(stock.data$Date), format="%m/%d/%Y")
+attach(stock.data)
+```
+
+Inspect Data
+
+```{r}
+head(stock.data)
+```
+
+# Events
+
+```{r}
+evt.ficom <- which(Date=="1964-04-07")
+evt.loss <- which(Date=="1993-07-27")
+evt.lenovo <- which(Date=="2005-05-02")
+evt.healthm <- which(Date=="2015-08-05")
+evt.truven <- which(Date=="2016-02-18")
+evt.alldates <- c(evt.ficom, evt.loss, evt.lenovo, evt.healthm, evt.truven)
+```
+
+# VISUALIZATION
+
+ˆ
+```{r}
+ggplot(stock.data, aes(x = Date, y = AdjClose)) + 
+  geom_line(color = "red") + xlab("Date") + 
+  ylab("Stock Close Price") + 
+  ggtitle("Stock Close Price") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  geom_vline(xintercept = as.numeric(Date[evt.alldates]), color = c("blue"), 
+             linetype = "dashed")
+```
+
+## IBM Stock Price: Non-constant variance => Transform
+
+```{r}
+AdjClose.tr = log(AdjClose)
+ggplot(stock.data, aes(Date, AdjClose.tr)) + geom_line() + xlab("") + ylab("Stock Close Price")+
+geom_vline(xintercept = as.numeric(Date[evt.alldates]))
+```
+
+```{r}
+ts.price = ts(rev(AdjClose.tr),start=c(1962,1,2),frequency=365.25)
+```
+
+# Differencing to Remove Trend
+
+```{r}
+diff.ts.price = diff(ts.price)
+acf(as.vector(diff.ts.price), main="ACF: One-Lag Difference Transf Price")
+pacf(diff.ts.price, main="PACF: One-Lag Difference Transf Price")
+```
+
+```{r}
+ggPacf(diff.ts.price, lag.max = 40, plot = TRUE, na.action = na.contiguous)
+```
+
+
+## Apply ARIMA
+
+## Order selection -- AIC 
+
+```{r}
+n = length(ts.price)
+norder = 6
+p = c(1:norder)-1; q = c(1:norder)-1
+aic = matrix(0,norder,norder)
+for(i in 1:norder){
+   for(j in 1:norder){
+    modij = arima(ts.price,order = c(p[i],1,q[j]), method='ML')
+    aic[i,j] = modij$aic-2*(p[i]+q[j]+1)+2*(p[i]+q[j]+1)*n/(n-p[i]-q[j]-2)
+   }  
+}
+```
+
+
+```{r}
+aicv = as.vector(aic)  
+plot(aicv,ylab="AIC values")
+indexp = rep(c(1:norder),norder)
+indexq = rep(c(1:norder),each=norder)
+indexaic = which(aicv == min(aicv))
+porder = indexp[indexaic]-1
+qorder = indexq[indexaic]-1
+```
+```{r}
+final_model = arima(ts.price, order = c(porder,1,qorder), method = "ML")
+```
+
+## GOF: residual analysis
+
+```{r}
+par(mfrow=c(2,2))
+plot(resid(final_model), ylab='Residuals',type='o',main="Residual Plot")
+abline(h=0)
+acf(resid(final_model),main="ACF: Residuals")
+hist(resid(final_model),xlab='Residuals',main='Histogram: Residuals')
+qqnorm(resid(final_model),ylab="Sample Q",xlab="Theoretical Q")
+qqline(resid(final_model))
+
+Box.test(final_model$resid, lag = (porder+qorder+1), type = "Box-Pierce", fitdf = (porder+qorder))
+Box.test(final_model$resid, lag = (porder+qorder+1), type = "Ljung-Box", fitdf = (porder+qorder))
+```
+
+
+# FORECASTING WITH ARIMA
+
+## 10 Days Ahead: 
+
+```{r}
+n <- length(ts.price)
+nfit <- n - 10
+outprice <- arima(ts.price[1:nfit], order = c(porder,1,qorder),method = "ML")
+outpred <- predict(outprice,n.ahead=10)
+ubound <- outpred$pred + 1.96*outpred$se
+lbound <- outpred$pred - 1.96*outpred$se
+ymin <- min(exp(lbound))
+ymax <- max(exp(ubound))
+```
+
+```{r}
+plot(rev(stock.data$Date)[(n-50):n],exp(ts.price[(n-50):n]),type="l", ylim=c(ymin,ymax), xlab="Time", ylab="Stock Price")
+points(rev(stock.data$Date)[(nfit+1):n],exp(outpred$pred),col="red")
+lines(rev(stock.data$Date)[(nfit+1):n],exp(ubound),lty=3,lwd= 2, col="blue")
+lines(rev(stock.data$Date)[(nfit+1):n],exp(lbound),lty=3,lwd= 2, col="blue")
+```
+
+
+# Compute Accuracy Measures
+
+```{r}
+obsprice = exp(ts.price[(nfit+1):n]) 
+predprice = exp(outpred$pred)
+```
+
+## Mean Squared Prediction Error (MSPE)
+
+```{r}
+mean((predprice-obsprice)^2)
+```
+
+
+## Mean Absolute Prediction Error (MAE)
+
+```{r}
+mean(abs(predprice-obsprice))
+```
+
+## Mean Absolute Percentage Error (MAPE)
+
+```{r}
+mean(abs(predprice-obsprice)/obsprice)
+```
+
+## Precision Measure (PM)
+
+```{r}
+sum((predprice-obsprice)^2)/sum((obsprice-mean(obsprice))^2)
+```
+
+### Does the observed data fall outside the prediction intervals?
+
+```{r}
+sum(obsprice<exp(lbound))+sum(obsprice>exp(ubound))
+```
+
+## Daily Prediction over a period of 10 days
+
+```{r}
+outpred.10 = NULL
+ubound.10 = NULL
+lbound.10 = NULL
+n = length(ts.price)
+for(i in 1:10){
+   nfit = n-(10-i-1)
+   outprice = arima(ts.price[1:nfit], order = c(porder,1,qorder),method = "ML")
+   pred.1 = predict(outprice,n.ahead=1)
+   outpred.10 = c(outpred.10,pred.1$pred)
+   ubound.10 = c(ubound.10, pred.1$pred+1.96*pred.1$se)
+   lbound.10 = c(lbound.10, pred.1$pred-1.96*pred.1$se)
+  }
+```
+
+## Compute Accuracy Measures
+
+```{r}
+predprice.10 = exp(outpred.10)
+```
+
+
+### Mean Squared Prediction Error (MSPE)
+```{r}
+mean((predprice.10-obsprice)^2)
+```
+
+### Mean Absolute Prediction Error (MAE)
+
+```{r}
+mean(abs(predprice.10-obsprice))
+```
+
+### Mean Absolute Percentage Error (MAPE)
+
+```{r}
+mean(abs(predprice.10-obsprice)/obsprice)
+```
+
+
+### Precision Measure (PM)
+
+```{r}
+sum((predprice.10-obsprice)^2)/sum((obsprice-mean(obsprice))^2)
+```
+
+### Does the observed data fall outside the prediction intervals?
+
+```{r}
+sum(obsprice<exp(lbound.10))+sum(obsprice>exp(ubound.10))
+```
+
+```{r}
+nfit = n-10
+ymin = min(exp(c(lbound,lbound.10)))
+ymax = max(exp(c(ubound,ubound.10)))
+plot(rev(stock.data$Date)[(n-30):n],exp(ts.price[(n-30):n]),type="l", ylim=c(ymin,ymax), xlab="Time", ylab="Stock Price")
+points(rev(stock.data$Date)[(nfit+1):n],exp(outpred$pred),col="red")
+lines(rev(stock.data$Date)[(nfit+1):n],exp(ubound),lty=3,lwd= 2, col="blue")
+lines(rev(stock.data$Date)[(nfit+1):n],exp(lbound),lty=3,lwd= 2, col="blue")
+points(rev(stock.data$Date)[(nfit+1):n],exp(outpred.10),col="green")
+lines(rev(stock.data$Date)[(nfit+1):n],exp(ubound.10),lty=3,lwd= 2, col="purple")
+lines(rev(stock.data$Date)[(nfit+1):n],exp(lbound.10),lty=3,lwd= 2, col="purple")
+legend(rev(stock.data$Date)[n-25],170,legend=c("1 Lag Ahead Prediction", "1 Lag Ahead Prediction Interval",
+"10 Lags Ahead Prediction","10 Lags Ahead Prediction Interval" ),col=c("green","purple","red","blue"),pch=1,lty = c(0,3,0,3))
+
+```
+
