@@ -1,0 +1,48 @@
+---
+title: "TimeSeries Johnson & Johnson"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# LIBRARY
+
+```{r}
+library(astsa)
+library(ggplot2)
+library(ggfortify)
+```
+
+# JOHNSON & JOHNSON DATA
+
+```{r}
+autoplot(jj, ts.colour = 'blue',, ts.linetype = 'solid')
+```
+
+# FLU DATA
+
+```{r}
+autoplot(flu, ts.colour = 'red', ts.linetype = 'solid', main = "Flu Plot")
+```
+
+
+# GLOBAL TEMPERATURE
+
+```{r}
+autoplot(globtemp, ts.colour = 'red', ts.linetype = 'solid', main = "Flu Plot")
+```
+
+
+# ASTROPHYSICS
+
+The magnitude of a star taken at midnight for 600 consecutive days. The data are taken from the classic text, The Calculus of Observations, a Treatise on Numerical Mathematics, by E.T. Whittaker and G. Robinson, (1923, Blackie and Son, Ltd.).
+
+
+```{r}
+autoplot(star, ts.colour = 'red', ts.linetype = 'solid', main = "Flu Plot")
+```
+
+
+
