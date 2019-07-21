@@ -1,0 +1,54 @@
+---
+title: "TimeSeries Random Walk"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# LIBRARY
+
+
+```{r}
+library(ggplot2)
+library(ggfortify)
+```
+
+# RANDOM WALK
+
+Create data
+
+```{r}
+x = NULL
+x[1] <- 0
+
+for (i in 2:2000)
+{
+  x[i] <- x[i - 1] + rnorm(1)
+}
+```
+
+
+```{r}
+random_walk <- ts(x)
+
+autoplot(random_walk) + labs(title = "Random Walk", align = "center") + 
+  theme(plot.title = element_text(hjust = 0.5)) + xlab("Days") + ylab("Value")
+```
+
+```{r}
+acf(random_walk)
+```
+
+```{r}
+autoplot(diff(random_walk)) + labs(title = "Random Walk Diff", align = "center") + 
+  theme(plot.title = element_text(hjust = 0.5)) + xlab("Days") + ylab("Value")
+```
+
+```{r}
+acf(diff(random_walk))
+```
+
+
+
