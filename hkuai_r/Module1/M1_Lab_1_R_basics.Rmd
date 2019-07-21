@@ -65,7 +65,7 @@ One type can be cast to another type in R. An integer can be explicitly cast int
 
 ```{r}
 num <- 1
-class(int1)
+class(num)
 is.integer(num)
 is.numeric(num)
 
@@ -301,4 +301,131 @@ library(tibble)
 mtx3.tibble <- as_tibble(mtx3)
 mtx3.tibble
 ```
+
+# PLOT HISTOGRAM
+
+## GENERATE DUMMY DATA
+
+```{r}
+library(ggplot2)
+
+set.seed(13)
+gender <- factor(rep(c("M", "F"), each = 500))
+gender
+weight.M <- round(c(rnorm(500, mean = 70, sd = 5)))
+weight.M[1:20]
+weighth.F <- round(c(rnorm(500, mean = 60, sd = 5)))
+```
+
+```{r}
+gender.df <- data.frame(gender, weight = c(weight.M, weighth.F))
+head(gender.df)
+```
+
+BASIC HISTOGRAM
+
+```{r}
+ggplot(gender.df, aes(x=weight)) + geom_histogram()
+```
+
+Change the width of the bin
+
+```{r}
+ggplot(gender.df, aes(x=weight)) +   geom_histogram(binwidth=1)
+```
+
+
+Change color
+
+```{r}
+gender.plot <- ggplot(gender.df, aes(x=weight)) +  geom_histogram(color="dark blue", fill="light blue")
+gender.plot
+```
+
+
+Add mean line and density plot on the histogram
+
+
+```{r}
+gender.plot + geom_vline(aes(xintercept=mean(weight)), color="blue", linetype="dashed", size=1)
+```
+
+## HISTOGRAM WITH DENSITY
+
+The histogram is plotted with density instead of count on y-axis
+Overlay with transparent density plot. The value of alpha controls the level of transparency
+
+```{r}
+ggplot(gender.df, aes(x=weight)) + 
+ geom_histogram(aes(y=..density..), colour="black", fill="white", bins = 30) +
+ geom_density(alpha=.2, fill="#FF6666") 
+```
+
+Change histogram plot line types and colors
+
+```{r}
+ggplot(gender.df, aes(x=weight)) +
+  geom_histogram(color="black", fill="lightblue", linetype="dashed")
+
+```
+
+## Change histogram plot colors by groups
+
+Calculate the mean of each group
+
+```{r}
+group.mean.df <- gender.df %>% group_by(gender) %>% summarise(groupMean = mean(weight))
+head(group.mean.df)
+```
+
+
+## Change histogram plot line colors by groups
+
+```{r}
+ggplot(gender.df, aes(x=weight, color=gender)) + geom_histogram(fill="white", bins = 30)
+```
+
+```{r}
+ggplot(gender.df, aes(x=weight, color=gender)) + 
+  geom_histogram(fill="white", alpha=0.5, position="identity", bins=30)
+```
+
+Interleaved histograms
+
+```{r}
+ggplot(gender.df, aes(x=weight, color=gender)) +
+  geom_histogram(fill="white", position="dodge")+
+  theme(legend.position="top")
+```
+
+
+```{r}
+intercept.plot <- ggplot(gender.df, aes(x=weight, color=gender)) +
+    geom_histogram(fill="white", position="dodge") +
+    geom_vline(data = group.mean.df, aes(xintercept=groupMean, color=gender),
+             linetype="dashed") +
+    theme(legend.position="top")
+
+intercept.plot
+```
+
+Customize colors
+
+
+```{r}
+intercept.plot + scale_color_manual(values=c("#999999", "#E69F00", "#56B4E9"))
+# Use brewer color palettes
+intercept.plot + scale_color_brewer(palette="Dark2")
+# Use grey scale
+intercept.plot + scale_color_grey() + theme_classic() +
+  theme(legend.position="top")
+```
+
+
+
+
+
+
+
+
 
