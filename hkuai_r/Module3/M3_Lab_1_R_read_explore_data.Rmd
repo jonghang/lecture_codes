@@ -411,14 +411,73 @@ flights.taxi_in.sorted.minutes <- flights.taxi_in.sorted %>% mutate(TAXI_IN_MIN 
 head(flights.taxi_in.sorted.minutes)
 ```
 
-## TIBBLE
+# DATA WRANGLING
+
+## Glycemic Index Data of Food
+
+This exercise illustrates data wrangling to combine several CSV files into a single dataset. The source of the data files is http://www.diogenes-eu.org/GI-Database/Default.htm
+
+The CSV files are:
+
+* Diogenes-GI-Database-for-Website-Czech.csv
+* Diogenes-GI-Database-for-Website-Danish.csv
+* Diogenes-GI-Database-for-Website-Dutch.csv
+* Diogenes-GI-Database-for-Website-German.csv
+* Diogenes-GI-Database-for-Website-Greek.csv
+* Diogenes-GI-Database-for-Website-Spanish.csv
+* Diogenes-GI-Database-for-Website-UK.csv
 
 ```{r}
-flights.tib <- as_tibble(flights.data.date)
+rm(list = ls())
 
-
-# flights.tib %>% view()
+HOME <- Sys.getenv('HOME')
+GI.Data.Dir <- paste(HOME, 'Data', 'food', sep = '/')
+GI.Data.Dir
 ```
+
+Read Data Files
+
+```{r}
+GI.csv.files <- list.files(GI.Data.Dir, pattern = 'Diogenes-.*\\.csv', full.names = TRUE)
+GI.csv.files
+
+GI.cols <- c('diogenes_code','country_food_code',
+             'food_name','english_transl',
+             'diogenes_food_grp','cho_100g',
+             'gi_value','GL', 'gl_category',
+             'source1','source2')
+
+GI.czech <- read.csv(GI.csv.files[1])
+colnames(GI.czech) <- GI.cols
+head(GI.czech)
+```
+
+
+```{r}
+
+build_gi_food_data <- function(fullPath)
+{
+    GI.cols <- c('diogenes_code','country_food_code',
+             'food_name','english_transl',
+             'diogenes_food_grp','cho_100g',
+             'gi_value','GL', 'gl_category',
+             'source1','source2','comment')
+    data <- read.csv(fullPath, )[,1:12]
+    colnames(data) <- GI.cols
+    data <- data %>% mutate_at(vars(starts_with("source")),funs(factor))
+    data <- data %>% mutate_at(vars(starts_with("cho_")),funs(factor))
+    data <- data %>% mutate_at(vars(starts_with("GL")),funs(factor))
+    data
+}
+
+head(build_gi_food_data(GI.csv.files[5]))
+
+GI.data.all <- rbind_list(lapply(GI.csv.files, build_gi_food_data))
+head(GI.data.all)
+```
+
+
+
 
 
 
