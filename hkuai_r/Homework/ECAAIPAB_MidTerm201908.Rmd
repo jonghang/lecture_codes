@@ -51,8 +51,108 @@ Use `summary()` function to obtain basic statistics of data such as mean, standa
 summary(GI.data)
 ```
 
+Examine the structure of `GI.data`.  We will convert `cho_100g`, `gi_value` and `GL` to float.
 
 ```{r}
-unique(GI.data$country_food_code)
+str(GI.data)
 ```
+
+Convert columns to numeric type:
+
+```{r}
+GI.data$GL <- as.numeric(GI.data$GL)
+GI.data$gi_value <- as.numeric(GI.data$gi_value)
+GI.data$cho_100g <- as.numeric(GI.data$cho_100g)
+```
+
+Convert columns to factor type:
+
+```{r}
+GI.data$gl_category <- as.factor(GI.data$gl_category)
+GI.data$diogenes_food_grp <- as.factor(GI.data$diogenes_food_grp)
+GI.data$source2 <- as.factor(GI.data$source2)
+GI.data$diogenes_code <- as.factor(GI.data$diogenes_code)
+```
+
+Reexamine the structure:
+
+```{r}
+str(GI.data)
+```
+
+
+Which country has the highest `gi_value` (Glycemic Index) mean?  
+Remove NAs (NULLs) before applying mean.
+
+```{r}
+# group by country and aggregate by mean of gi_value
+giByCountry <- GI.data %>% filter(!is.na(gi_value)) %>% 
+  group_by(country) %>% summarise(mean_gi = mean(gi_value))
+
+# find the country with highest gi_value mean
+giByCountry[which.max(giByCountry$mean_gi),]
+```
+ Answer:
+ 
+Write your code to determine which country has the highest `GL` (Glycemic Load) mean?  
+Remove NAs (NULLs) before applying mean.
+
+```{r}
+# group by country and aggregate by mean of GL
+
+# find the country with highest GL mean
+
+```
+
+Answer: 
+
+Write your code to determine which country has the lowest `GL` (Glycemic Load) mean?  
+Remove NAs (NULLs) before applying mean.
+
+```{r}
+# group by country and aggregate by mean of GL
+
+# find the country with highest GL mean
+
+```
+
+Answer: 
+
+# CORRELATION
+
+First remove NAs from $x$ and $y$:
+
+```{r}
+GI.xy <- GI.data %>% select(gi_value, GL) %>% filter(!is.na(gi_value), !is.na(GL))
+x <- GI.xy$gi_value
+y <- GI.xy$GL
+```
+
+Quenstions:
+
+1. What is the the correlation coefficient for `gi_value` and `GL`? 
+2. Do they have correlation?
+3. What can you say about Glycemic Index and Glycemic Load of food from your results?
+
+```{r}
+cor(x, y)
+```
+
+Answers:
+1.
+2.
+3.
+
+
+
+
+
+
+
+
+
+
+
+
+
 
