@@ -464,6 +464,10 @@ build_gi_food_data <- function(fullPath)
              'source1','source2','comment')
     data <- read.csv(fullPath, )[,1:12]
     colnames(data) <- GI.cols
+    splitWords <- unlist(strsplit(filename, "-"))
+    lastToken <- splitWords[length(splitWords)]
+    country <- toupper (str_remove(lastToken, ".csv"))
+    data$country <- country
     data <- data %>% mutate_at(vars(starts_with("source")),funs(factor))
     data <- data %>% mutate_at(vars(starts_with("cho_")),funs(factor))
     data <- data %>% mutate_at(vars(starts_with("GL")),funs(factor))
@@ -483,6 +487,12 @@ write.csv(x = GI.data.all, file = "gi_data.csv", row.names = FALSE)
 ```
 
 
+```{r}
+filename <- "Diogenes-GI-Database-for-Website-Czech.csv"
+splitWords <- unlist(strsplit(filename, "-"))
+lastToken <- splitWords[length(splitWords)]
+country <- toupper (str_remove(lastToken, ".csv"))
+```
 
 
 

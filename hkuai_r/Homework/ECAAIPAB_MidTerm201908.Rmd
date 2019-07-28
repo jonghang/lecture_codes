@@ -7,6 +7,11 @@ output: word_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+
+```{r}
+rm(list = ls())
+```
+
 # LIBRARY
 
 The following libraries are required for this homework.
@@ -18,11 +23,7 @@ library(ggplot2)
 
 # READ DATA
 
-Read the CSV data from `gi_food_data.csv`.
-
-```{r}
-rm(list = ls())
-```
+Read the CSV data from `gi_food_data.csv`. Ensure the data file is in the same directory as this markdown R.
 
 ```{r}
 GI.data <- read.csv("gi_data.csv")
@@ -31,21 +32,27 @@ GI.data <- read.csv("gi_data.csv")
 Check the table's column names
 
 ```{r}
-colnames(gi.data)8
+colnames(GI.data)
 ```
 
 How many columns are there?
-n
-```{r}
 
+```{r}
+nrow(GI.data)
 ```
 
+Answer: 
 
 ## Basic Stastics of Data
 
 Use `summary()` function to obtain basic statistics of data such as mean, standard deviation
 
 ```{r}
-summary(gi.data)
+summary(GI.data)
+```
+
+
+```{r}
+unique(GI.data$country_food_code)
 ```
 
