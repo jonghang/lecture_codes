@@ -12,7 +12,7 @@ knitr::opts_chunk$set(echo = TRUE)
 rm(list = ls())
 ```
 
-# LIBRARY
+# PART 1 - BASIC R PROGRAMMING
 
 The following libraries are required for this homework.
 
@@ -26,7 +26,7 @@ library(ggplot2)
 Read the CSV data from `gi_food_data.csv`. Ensure the data file is in the same directory as this markdown R.
 
 ```{r}
-GI.data <- read.csv("gi_data.csv")
+GI.data <- read.csv("gi_data.csv", stringsAsFactors=FALSE, fileEncoding="latin1")
 ```
 
 Check the table's column names
@@ -35,7 +35,9 @@ Check the table's column names
 colnames(GI.data)
 ```
 
-How many columns are there?
+## Problem 1.1
+
+How many rows are there in `GI.data`?
 
 ```{r}
 nrow(GI.data)
@@ -74,15 +76,16 @@ GI.data$source2 <- as.factor(GI.data$source2)
 GI.data$diogenes_code <- as.factor(GI.data$diogenes_code)
 ```
 
-Reexamine the structure:
+Inspect the types for `GI.data`
 
 ```{r}
 str(GI.data)
 ```
 
+## Problem 1.2: Find Maximum and Minimum
 
-Which country has the highest `gi_value` (Glycemic Index) mean?  
-Remove NAs (NULLs) before applying mean.
+Question: Which country has the highest `gi_value` (Glycemic Index) mean?  
+Remove NAs (NULLs) before applying mean using `filter()`.
 
 ```{r}
 # group by country and aggregate by mean of gi_value
@@ -94,7 +97,7 @@ giByCountry[which.max(giByCountry$mean_gi),]
 ```
  Answer:
  
-Write your code to determine which country has the highest `GL` (Glycemic Load) mean?  
+Question: Write your code to determine which country has the highest `GL` (Glycemic Load) mean?  
 Remove NAs (NULLs) before applying mean.
 
 ```{r}
@@ -106,7 +109,7 @@ Remove NAs (NULLs) before applying mean.
 
 Answer: 
 
-Write your code to determine which country has the lowest `GL` (Glycemic Load) mean?  
+Question: Write your code to determine which country has the lowest `gi_value` (Glycemic Index) mean?  
 Remove NAs (NULLs) before applying mean.
 
 ```{r}
@@ -118,9 +121,23 @@ Remove NAs (NULLs) before applying mean.
 
 Answer: 
 
-# CORRELATION
+Question: Write your code to determine which country has the lowest `GL` (Glycemic Load) mean?  
+Remove NAs (NULLs) before applying mean.
 
-First remove NAs from $x$ and $y$:
+```{r}
+# group by country and aggregate by mean of GL
+
+# find the country with highest GL mean
+
+```
+
+Answer: 
+
+# PART 2: STATISTICAL ANALYSIS USING R
+
+## Problem 2.1: Correlation
+
+Select `gi_value` and `GL` from `GI.data`.  Remove NAs from $x$ and $y$. Separate the 2 variables and assign them with $x$ and $y$ respectively:
 
 ```{r}
 GI.xy <- GI.data %>% select(gi_value, GL) %>% filter(!is.na(gi_value), !is.na(GL))
@@ -131,21 +148,192 @@ y <- GI.xy$GL
 Quenstions:
 
 1. What is the the correlation coefficient for `gi_value` and `GL`? 
-2. Do they have correlation?
-3. What can you say about Glycemic Index and Glycemic Load of food from your results?
+2. Is this a strong or weak correlation?
+3. What can you say about correlation between Glycemic Index and Glycemic Load of food from your results?
 
 ```{r}
 cor(x, y)
 ```
+
+Tips: Refer to https://en.wikipedia.org/wiki/Pearson_correlation_coefficient 
 
 Answers:
 1.
 2.
 3.
 
+## Problem 2.2
+
+Plot the histogram
+
+```{r}
+ggplot(GI.data, aes(x=gi_value)) + geom_histogram(binwidth = 1)
+```
+
+Question: How many peaks are there exceeding the count of 500?
+
+Answer:
 
 
+## Problem 2.3
 
+According to https://beyondtype1.org/glycemic-index-diet-diabetes/ in fighting diabetes, we should eat food with low GI (gi_value).
+
+Question: Find the top 5 food name in english translation having the lowest GI?
+
+To answer this question, select the food name in english translation, `gi_value`, sort `gi_value` in ascending order. take the first 5:
+
+
+```{r}
+lowestGI <- GI.data %>% select(english_transl, gi_value) %>% distinct() %>% arrange(gi_value)
+head(lowestGI, 5)
+```
+
+Answer:
+1.
+2.
+3.
+4.
+5.
+
+
+Question: Find the top 5 food with the highest Glycemic Index:
+
+```{r}
+highestGI <- GI.data %>% select(english_transl, gi_value) %>% distinct() %>% arrange(desc(gi_value))
+head(highestGI, 5)
+```
+
+Answer:
+1.
+2.
+3.
+4.
+5.
+
+
+Question: Find the top 5 food with the highest GL?
+
+```{r}
+highestGL <- GI.data %>% filter(!is.na(english_transl), english_transl != '') %>% select(english_transl, GL) %>% distinct() %>% arrange(desc(GL))
+head(highestGL, 5)
+```
+
+Answer:
+1.
+2.
+3.
+4.
+5.
+
+Question: Find the top 5 food with the lowest GL?
+
+```{r}
+lowestGL <- GI.data %>% select(english_transl, GL) %>% distinct() %>% arrange(GL)
+head(lowestGL, 5)
+```
+
+Answer:
+1.
+2.
+3.
+4.
+5.
+
+
+According to https://www.diabetes.co.uk/diet/glycemic-load.html, Glycemic load is a measure that takes into account the amount of carbohydrate in a portion of food together with how quickly it raises blood glucose levels. In other words, for every 100g of a particular food, how much carbohydrate (CHO) does it contain? This corresponds to `cho_100g` column which indicates the amount of CHO per 100g.
+
+# MANAGING DIABETES USING GLYCEMIC INDEX AND GLYCEMIC LOAD
+
+Go to youtube to watch this video at https://www.youtube.com/watch?v=Z-cxMdEvsZM&t=126s
+
+In the video, the speaker has define several levels for GI and GL. We will use his video to add 2 columns `GI.data` to categorize the food in the data.
+
+First, write a function for the definition. This function defines high level as $H$, low level as $L$, medium as $<M$ and unknown as $U$
+
+```{r}
+GlycemicLevels <- function(inputVal, lowLevel, highLevel)
+{
+  if(!is.na(inputVal) && inputVal > highLevel) return("H")
+  else if(!is.na(inputVal) && inputVal < lowLevel) return("L")
+  else if(!is.na(inputVal) && inputVal >= lowLevel && inputVal <= highLevel) return("M")
+  else return("U")
+}
+```
+
+Add `GI_level` column for Glycemic Index Level and `GL_level` for Glycemic Load Level.
+
+```{r}
+GI.data$GI_level <- unlist(lapply(GI.data$gi_value, FUN = GlycemicLevels, lowLevel = 55, highLevel = 70))
+GI.data$GL_level <- unlist(lapply(GI.data$GL, FUN = GlycemicLevels, lowLevel = 55, highLevel = 70))
+```
+
+Check the values of the 2 new columns:
+
+```{r}
+head(select(GI.data, english_transl, GI_level, GL_level))
+```
+
+We can now use this data to design a diet plan for diabetes patients. In doing so, we will take the approach of selecting food with lowest GI and GL levels. To further fortify our recommendations, we will add one more column which is an addition of `gi_value` and `GL` and use this value to sort the data.
+
+### RECOMMENDED DIET PLAN FOR DIABETIC PATIENTS
+
+First, filter data to have only level $L$. Then, use mutate() function to add the new column. 
+
+```{r}
+lowGIGL <- GI.data %>% filter(GI_level == 'L' & GL_level == 'L') %>% 
+  select(english_transl, gi_value, GL) %>%
+  mutate(sum_gi_gl = gi_value + GL) %>% distinct() %>%
+  arrange(sum_gi_gl)
+head(lowGIGL, 10)
+```
+
+Question: Inspect the first 10 rows, which of the 2 records are duplicates?
+Answers:
+1.
+2.
+
+To remove duplicates, convert `english_transl` to lower case and reorder the data in ascending order using `sum_gi_gl` column.
+
+```{r}
+lowGIGL.clean <- lowGIGL
+lowGIGL.clean$english_transl <- as.character(lowGIGL.clean$english_transl)
+lowGIGL.clean$english_transl <- tolower(lowGIGL.clean$english_transl)
+head(lowGIGL.clean, 10)
+```
+
+Notice `english_transl` is now in lower case.
+Question: What is the last item (10th) in the output above?
+Answer:
+
+```{r}
+lowGIGL.unique <- lowGIGL.clean %>% distinct()
+head(lowGIGL.unique, 10)
+```
+
+Duplicates are now removed.
+
+Question: What is the last item (10th) now?
+Answer:
+
+
+### FOOD TO AVOID
+
+We now determine the food which diabetic patients should avoid. We need to identify food with high GI and high GL.
+
+First, convert `english_transl` to lower case:
+
+```{r}
+GI.data$english_transl <- tolower(GI.data$english_transl)
+```
+
+
+```{r}
+highGIGL <- GI.data %>% filter(GI_level == 'H' & GL_level == 'H') %>%
+  mutate(sum_gi_gl = gi_value + GL) %>% arrange(desc(sum_gi_gl)) %>%
+  select(english_transl, gi_value, GL, sum_gi_gl) %>% distinct()
+head(highGIGL, 10)
+```
 
 
 
