@@ -12,7 +12,9 @@ knitr::opts_chunk$set(echo = TRUE)
 rm(list = ls())
 ```
 
-# PART 1 - BASIC R PROGRAMMING
+STUDENT NAME:
+
+# PART 1 - BASIC R PROGRAMMING [20 Marks]
 
 The following libraries are required for this homework.
 
@@ -21,7 +23,6 @@ library(tidyverse)
 library(ggplot2)
 ```
 
-# READ DATA
 
 Read the CSV data from `gi_food_data.csv`. Ensure the data file is in the same directory as this markdown R.
 
@@ -35,7 +36,7 @@ Check the table's column names
 colnames(GI.data)
 ```
 
-## Problem 1.1
+*Question 1 [2 Marks]*
 
 How many rows are there in `GI.data`?
 
@@ -67,24 +68,38 @@ GI.data$gi_value <- as.numeric(GI.data$gi_value)
 GI.data$cho_100g <- as.numeric(GI.data$cho_100g)
 ```
 
-Convert columns to factor type:
+Convert columns to factor and character types:
 
 ```{r}
 GI.data$gl_category <- as.factor(GI.data$gl_category)
 GI.data$diogenes_food_grp <- as.factor(GI.data$diogenes_food_grp)
-GI.data$source2 <- as.factor(GI.data$source2)
-GI.data$diogenes_code <- as.factor(GI.data$diogenes_code)
+GI.data$source2 <- as.character(GI.data$source2)
+GI.data$diogenes_code <- as.character(GI.data$diogenes_code)
+GI.data$country <- as.factor(GI.data$country)
 ```
 
-Inspect the types for `GI.data`
+*Question 2 [3 Marks]*
+Some of the variables above were converted to numeric, some to factor. What are the benefits of factor type in carrying out statistical analysis? Watch video here for tips 
+https://www.youtube.com/watch?v=9f2g7RN5N0I
+Answer:
+
+Inspect the types for `GI.data` after conversions.
 
 ```{r}
 str(GI.data)
 ```
 
-## Problem 1.2: Find Maximum and Minimum
+*Question 3 [3 Marks]* 
+What are those countries represented in this dataset?
 
-Question: Which country has the highest `gi_value` (Glycemic Index) mean?  
+```{r}
+unique(GI.data$country)
+```
+Answer:
+
+
+*Question 4 [3 Marks]* 
+Which country has the highest `gi_value` (Glycemic Index) mean?  
 Remove NAs (NULLs) before applying mean using `filter()`.
 
 ```{r}
@@ -97,45 +112,53 @@ giByCountry[which.max(giByCountry$mean_gi),]
 ```
  Answer:
  
-Question: Write your code to determine which country has the highest `GL` (Glycemic Load) mean?  
+ 
+*Question 5 [3 Marks]* 
+Write your code to determine which country has the highest `GL` (Glycemic Load) mean?  
 Remove NAs (NULLs) before applying mean.
 
 ```{r}
 # group by country and aggregate by mean of GL
-
+glByCountry <- GI.data %>% filter(!is.na(GL)) %>% 
+  group_by(country) %>% summarise(mean_gl = mean(GL))
 # find the country with highest GL mean
-
+giByCountry[which.max(glByCountry$mean_gl),]
 ```
 
 Answer: 
 
-Question: Write your code to determine which country has the lowest `gi_value` (Glycemic Index) mean?  
+
+
+*Question 6 [3 Marks]* 
+Which country has the lowest `gi_value` (Glycemic Index) mean?  
 Remove NAs (NULLs) before applying mean.
 
 ```{r}
 # group by country and aggregate by mean of GL
-
-# find the country with highest GL mean
-
+giByCountry <- GI.data %>% filter(!is.na(gi_value)) %>% 
+  group_by(country) %>% summarise(mean_gi = mean(gi_value))
+# find the country with lowest GI mean
+giByCountry[which.min(giByCountry$mean_gi),]
 ```
 
 Answer: 
 
-Question: Write your code to determine which country has the lowest `GL` (Glycemic Load) mean?  
+*Question 7 [2 Marks]*
+Which country has the lowest `GL` (Glycemic Load) mean?  
 Remove NAs (NULLs) before applying mean.
 
 ```{r}
 # group by country and aggregate by mean of GL
+glByCountry <- GI.data %>% filter(!is.na(GL)) %>% 
+  group_by(country) %>% summarise(mean_gl = mean(GL))
 
 # find the country with highest GL mean
-
+glByCountry[which.min(glByCountry$mean_gl),]
 ```
 
 Answer: 
 
-# PART 2: STATISTICAL ANALYSIS USING R
-
-## Problem 2.1: Correlation
+# PART 2: STATISTICAL ANALYSIS USING R [30 Marks]
 
 Select `gi_value` and `GL` from `GI.data`.  Remove NAs from $x$ and $y$. Separate the 2 variables and assign them with $x$ and $y$ respectively:
 
@@ -145,24 +168,21 @@ x <- GI.xy$gi_value
 y <- GI.xy$GL
 ```
 
-Quenstions:
+R provies the `cor()` function to determine correlation coefficient.
 
+*Quenstions 1 [5 Marks]*
 1. What is the the correlation coefficient for `gi_value` and `GL`? 
-2. Is this a strong or weak correlation?
+2. Is this a strong or weak correlation? Tips: Refer to https://en.wikipedia.org/wiki/Pearson_correlation_coefficient 
 3. What can you say about correlation between Glycemic Index and Glycemic Load of food from your results?
 
 ```{r}
 cor(x, y)
 ```
-
-Tips: Refer to https://en.wikipedia.org/wiki/Pearson_correlation_coefficient 
-
 Answers:
 1.
 2.
 3.
 
-## Problem 2.2
 
 Plot the histogram
 
@@ -170,19 +190,19 @@ Plot the histogram
 ggplot(GI.data, aes(x=gi_value)) + geom_histogram(binwidth = 1)
 ```
 
-Question: How many peaks are there exceeding the count of 500?
+*Question 2 [5 Marks]*
+How many peaks are there exceeding the count of 500?
 
 Answer:
 
 
-## Problem 2.3
 
 According to https://beyondtype1.org/glycemic-index-diet-diabetes/ in fighting diabetes, we should eat food with low GI (gi_value).
 
-Question: Find the top 5 food name in english translation having the lowest GI?
+*Question 3 [5 Marks]*
+Find the top 5 food name in english translation having the lowest GI?
 
 To answer this question, select the food name in english translation, `gi_value`, sort `gi_value` in ascending order. take the first 5:
-
 
 ```{r}
 lowestGI <- GI.data %>% select(english_transl, gi_value) %>% distinct() %>% arrange(gi_value)
@@ -197,7 +217,8 @@ Answer:
 5.
 
 
-Question: Find the top 5 food with the highest Glycemic Index:
+*Question 4 [5 Marks]* 
+Find the top 5 food with the highest Glycemic Index:
 
 ```{r}
 highestGI <- GI.data %>% select(english_transl, gi_value) %>% distinct() %>% arrange(desc(gi_value))
@@ -212,7 +233,8 @@ Answer:
 5.
 
 
-Question: Find the top 5 food with the highest GL?
+*Question 5 [5 Marks]* 
+Find the top 5 food with the highest GL?
 
 ```{r}
 highestGL <- GI.data %>% filter(!is.na(english_transl), english_transl != '') %>% select(english_transl, GL) %>% distinct() %>% arrange(desc(GL))
@@ -226,7 +248,8 @@ Answer:
 4.
 5.
 
-Question: Find the top 5 food with the lowest GL?
+*Question 6 [5 Marks]* 
+Find the top 5 food with the lowest GL?
 
 ```{r}
 lowestGL <- GI.data %>% select(english_transl, GL) %>% distinct() %>% arrange(GL)
@@ -243,7 +266,7 @@ Answer:
 
 According to https://www.diabetes.co.uk/diet/glycemic-load.html, Glycemic load is a measure that takes into account the amount of carbohydrate in a portion of food together with how quickly it raises blood glucose levels. In other words, for every 100g of a particular food, how much carbohydrate (CHO) does it contain? This corresponds to `cho_100g` column which indicates the amount of CHO per 100g.
 
-# MANAGING DIABETES USING GLYCEMIC INDEX AND GLYCEMIC LOAD
+# PART 3: MANAGING DIABETES USING GLYCEMIC INDEX AND GLYCEMIC LOAD [30 Marks]
 
 Go to youtube to watch this video at https://www.youtube.com/watch?v=Z-cxMdEvsZM&t=126s
 
@@ -288,7 +311,8 @@ lowGIGL <- GI.data %>% filter(GI_level == 'L' & GL_level == 'L') %>%
 head(lowGIGL, 10)
 ```
 
-Question: Inspect the first 10 rows, which of the 2 records are duplicates?
+*Question 1 [6 Marks]* 
+Inspect the first 10 rows, which of the 2 records are duplicates?
 Answers:
 1.
 2.
@@ -303,7 +327,9 @@ head(lowGIGL.clean, 10)
 ```
 
 Notice `english_transl` is now in lower case.
-Question: What is the last item (10th) in the output above?
+
+*Question 2 [6 Marks]* 
+What is the last item (10th) in the output above?
 Answer:
 
 ```{r}
@@ -313,7 +339,8 @@ head(lowGIGL.unique, 10)
 
 Duplicates are now removed.
 
-Question: What is the last item (10th) now?
+*Question 3 [6 Marks]* 
+What is the last item (10th) now?
 Answer:
 
 
@@ -327,6 +354,7 @@ First, convert `english_transl` to lower case:
 GI.data$english_transl <- tolower(GI.data$english_transl)
 ```
 
+Like the previous step, create a new column called `sum_gi_gl`, sort the new column in descending order and retrieve the top 10 highest GI and GL.
 
 ```{r}
 highGIGL <- GI.data %>% filter(GI_level == 'H' & GL_level == 'H') %>%
@@ -335,11 +363,46 @@ highGIGL <- GI.data %>% filter(GI_level == 'H' & GL_level == 'H') %>%
 head(highGIGL, 10)
 ```
 
+As we can see, there are still duplicates in the records. They are `kellogg's cornflakes` and `kelloggs cornflakes`. To remove these duplicates, use `str_replace` function to remove the single quote.
+
+```{r}
+highGIGL <- highGIGL %>% mutate(english_transl = str_replace(english_transl, "'", "")) %>% distinct()
+head(highGIGL, 10)
+```
+
+The results look better now. 
+
+## DISCUSSIONS
+
+*Question 4 [6 Marks]*
+We now have some knowledge about what to recommend to the diabetic patients and what to avoid. Discuss briefly about the strength and weaknesses about this approach as well as the data and how well they can be improved. Talk also about the feasibility of this approach in helping diabetic patients.
+
+Write your answer below.
+
+Answer:
+
+*Question 5 [6 Marks]*
+By using the results in this exam, do some research over the internet to find out if Glycemic results we obtained is a good indicator of the health of a country's population.
+
+Answer:
+
+# PART 4: MORE INSIGHTS [20 Marks]
+
+*Question 1 [10 Marks]*
+Based on what you have learned from this course, suggest several other insights that we might be able to find from the GI data.
+Answer:
+
+
+*Question 2 [10 Marks]*
+So far, we have only explored data using R programming. In data science, it's crucial to possess a variety of other programming skills such as python, scala, Matlab, Java, SAS, and so forth. Select a few of them and do a research on their future, strength and weaknesses in realizing the aspirations of data science and AI.
+
+Answer:
 
 
 
+# SUBMISSION
 
-
+Upon completion of this exam, convert it to Microsoft Word using Knit -> Knit to Word. Deadline for submission is 17 AUGUST 2019, 7 PM.
 
 
 
