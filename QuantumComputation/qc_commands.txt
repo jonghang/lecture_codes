@@ -1,0 +1,44 @@
+# QVM ===
+# 
+docker run --rm -it -p 5000:5000 rigetti/qvm -S
+
+docker run --rm -it -p 5000:5000 --name qvm rigetti/qvm -S
+
+# QUILC ===== To run quilc in server mode, do the following:
+# 
+docker run --rm -it -p 5555:5555 rigetti/quilc -R
+
+docker run --rm -it -p 5555:5555 --name quilc rigetti/quilc -R
+
+# This will spawn an RPCQ-mode quilc server, that you can communicate
+# with over TCP. If you would like to change the port of the server to
+# PORT, you can alter the command as follows:
+# 
+docker run --rm -it -p PORT:PORT rigetti/quilc -R -p PORT
+
+# Ports 5555 and 6000 are exposed using the EXPOSE directive in the
+# rigetti/quilc image, so you can additionally use the -P option to
+# automatically bind these container ports to randomly assigned host
+# ports. You can then inspect the mapping using docker port CONTAINER
+# [PORT].
+# 
+# 
+Hi,
+
+I downloaded the lecture Jupyter Notebooks to run in my local MacBook. I
+managed to setup docker and run quilc and qvm on separate containers in my computer pulled from rigetti
+repository.
+
+These are the scripts I'm using to run the containers:
+
+docker run --rm -it -p 5000:5000 --name qvm rigetti/qvm -S
+
+docker run --rm -it -p 5555:5555 --name quilc rigetti/quilc -R
+
+How should I modify the following line of code to connect to the 2 containers:
+
+qvm_server, quilc_server, fc = init_qvm_and_quilc('/usr/local/bin/qvm', '/usr/local/bin/quilc')
+
+Thanks.
+
+
